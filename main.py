@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from schemas import Product
+from schemas.product import Product as productSchema
 from database import engine, Base
-import models
+from models.product import Product as productModel
 from database import SessionLocal
 
 app = FastAPI()
@@ -11,22 +11,28 @@ Base.metadata.create_all(bind=engine)
 def home():
     return {"message": "hello world"}
 
+###########
+# GET ALL #
+###########
 @app.get("/products")
 def get_products():
     db = SessionLocal()
 
-    products = db.query(models.Product).all()
+    products = db.query(productModel).all()
 
     db.close()
 
     return products 
 
+#############
+# GET BY ID #
+#############
 @app.get("/products/{product_id}")
 def get_by_id(product_id: int):
     db = SessionLocal()
 
-    product = db.query(models.Product).filter(
-        models.Product.id == product_id
+    product = db.query(productModel).filter(
+        productModel.id == product_id
     ).first()
 
     db.close()
@@ -36,11 +42,14 @@ def get_by_id(product_id: int):
 
     return {"error": "Product not found"}
 
+##################
+# CREATE PRODUCT #
+##################
 @app.post("/products")
-def create_product(product: Product):
+def create_product(product: productSchema):
     db = SessionLocal()
 
-    new_product = models.Product(
+    new_product = productModel(
         name=product.name,
         price=product.price,
         manufacturer=product.manufacturer,
@@ -55,12 +64,15 @@ def create_product(product: Product):
 
     return new_product
 
+##################
+# DELETE PRODUCT #
+##################
 @app.delete("/products/{product_id}")
 def delete_product(product_id: int):
     db = SessionLocal()
 
-    product = db.query(models.Product).filter(
-        models.Product.id == product_id
+    product = db.query(productModel).filter(
+        productModel.id == product_id
     ).first()
 
     if not product:
@@ -75,12 +87,15 @@ def delete_product(product_id: int):
             "deleted item": product.name,
             "id": product.id}
 
+##################
+# UPDATE PRODUCT #
+##################
 @app.put("/products/{product_id}")
-def update_product(product_id: int, updated_product: Product):
+def update_product(product_id: int, updated_product: productSchema):
     db = SessionLocal()
 
-    product = db.query(models.Product).filter(
-        models.Product.id == product_id
+    product = db.query(productModel).filter(
+        productModel.id == product_id
     ).first()
 
     if not product:

@@ -13,7 +13,7 @@ router = APIRouter(
 # GET ALL #
 ###########
 @router.get("/", 
-            summary="Gets all users", 
+            summary="Gets all Users", 
             description="Returns all users registered in the database")
 def get_users():
     db = SessionLocal()
@@ -28,7 +28,7 @@ def get_users():
 # GET BY ID #
 #############
 @router.get("/{user_id}", 
-            summary="Gets an user by ID", 
+            summary="Gets an User by ID", 
             description="Returns a user by the given ID")
 def get_by_id(user_id: int):
     db = SessionLocal()
@@ -67,8 +67,7 @@ def get_by_name(username: str):
 ###############
 # GET BY ROLE #
 ###############
-
-@router.get("/role/{role}")
+@router.get("/role/{role}", summary="Gets Users by Role", description="Returns every user from the database that matches the specified ROLE")
 def get_by_role(role: userRole):
     db = SessionLocal()
 

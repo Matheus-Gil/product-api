@@ -44,6 +44,25 @@ def get_by_id(user_id: int):
 
     return {"error": "User not found"}
 
+@router.post("/", 
+             summary="Adds a new user", 
+             description="Creates and registers a new user in the database, requiring a username and role")
+def create_user(user: userSchema):
+    db = SessionLocal()
+
+    new_user = userModel(
+        username=user.username,
+        role=user.role
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    db.close()
+
+    return new_user
+
 ###############
 # GET BY NAME #
 ###############
@@ -67,7 +86,9 @@ def get_by_name(username: str):
 ###############
 # GET BY ROLE #
 ###############
-@router.get("/role/{role}", summary="Gets Users by Role", description="Returns every user from the database that matches the specified ROLE")
+@router.get("/role/{role}", 
+            summary="Gets Users by Role", 
+            description="Returns every user from the database that matches the specified ROLE")
 def get_by_role(role: userRole):
     db = SessionLocal()
 

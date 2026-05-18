@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, status, HTTPException
 from schemas.product import Product as productSchema
 from models.product import Product as productModel
 from database import SessionLocal
@@ -11,7 +11,7 @@ router = APIRouter(
 ###########
 # GET ALL #
 ###########
-@router.get("/", 
+@router.get("/", status_code=status.HTTP_200_OK,
             summary="Gets all Products", 
             description="Returns every Product registered in the Database")
 def get_products():
@@ -26,7 +26,7 @@ def get_products():
 #############
 # GET BY ID #
 #############
-@router.get("/{product_id}", 
+@router.get("/{product_id}", status_code=status.HTTP_200_OK,
             summary="Gets a Product by ID", 
             description="Returns a product through the given ID.")
 def get_by_id(product_id: int):
@@ -41,12 +41,15 @@ def get_by_id(product_id: int):
     if product:
         return product
 
-    return {"error": "Product not found"}
+    raise HTTPException(
+        status_code=404,
+        detail="Product not found"
+    )
 
 ##################
 # CREATE PRODUCT #
 ##################
-@router.post("/", 
+@router.post("/", status_code=status.HTTP_201_CREATED,
              summary="Adds a new Product", 
              description="Creates and adds a new product in the database, requiring a name, price, manufacturer, stock and category.")
 def create_product(product: productSchema):
@@ -57,7 +60,8 @@ def create_product(product: productSchema):
         price=product.price,
         manufacturer=product.manufacturer,
         stock=product.stock,
-        category=product.category
+        category=product.category,
+        subcategory=product.subcategory
     )
 
     db.add(new_product)
@@ -71,7 +75,7 @@ def create_product(product: productSchema):
 ##################
 # DELETE PRODUCT #
 ##################
-@router.delete("/{product_id}", 
+@router.delete("/{product_id}", status_code=status.HTTP_200_OK,
                summary="Deletes a Product", 
                description="Removes a Product from the database through the given ID")
 def delete_product(product_id: int):
@@ -96,7 +100,7 @@ def delete_product(product_id: int):
 ##################
 # UPDATE PRODUCT #
 ##################
-@router.put("/{product_id}", 
+@router.put("/{product_id}", status_code=status.HTTP_200_OK,
             summary="Updates a Product", 
             description="Updates the selected Product's name, price and stock through the given ID")
 def update_product(product_id: int, updated_product: productSchema):

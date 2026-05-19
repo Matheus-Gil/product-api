@@ -1,7 +1,10 @@
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, Depends
 from schemas.product import Product as productSchema
 from models.product import Product as productModel
 from database import SessionLocal
+
+from sqlalchemy.orm import Session
+from database import get_db
 
 router = APIRouter(
     prefix="/products",
@@ -14,12 +17,10 @@ router = APIRouter(
 @router.get("/", status_code=status.HTTP_200_OK,
             summary="Gets all Products", 
             description="Returns every Product registered in the Database")
-def get_products():
-    db = SessionLocal()
+def get_products(db: Session = Depends(get_db)):
+    #db = SessionLocal()
 
     products = db.query(productModel).all()
-
-    db.close()
 
     return products 
 
@@ -29,14 +30,12 @@ def get_products():
 @router.get("/{product_id}", status_code=status.HTTP_200_OK,
             summary="Gets a Product by ID", 
             description="Returns a product through the given ID.")
-def get_by_id(product_id: int):
-    db = SessionLocal()
+def get_by_id(product_id: int, db: Session = Depends(get_db)):
 
     product = db.query(productModel).filter(
         productModel.id == product_id
     ).first()
 
-    db.close()
 
     if product:
         return product
@@ -52,8 +51,7 @@ def get_by_id(product_id: int):
 @router.post("/", status_code=status.HTTP_201_CREATED,
              summary="Adds a new Product", 
              description="Creates and adds a new product in the database, requiring a name, price, manufacturer, stock and category.")
-def create_product(product: productSchema):
-    db = SessionLocal()
+def create_product(product: productSchema, db: Session = Depends(get_db)):
 
     new_product = productModel(
         name=product.name,
@@ -68,8 +66,6 @@ def create_product(product: productSchema):
     db.commit()
     db.refresh(new_product)
 
-    db.close()
-
     return new_product
 
 ##################
@@ -78,20 +74,20 @@ def create_product(product: productSchema):
 @router.delete("/{product_id}", status_code=status.HTTP_200_OK,
                summary="Deletes a Product", 
                description="Removes a Product from the database through the given ID")
-def delete_product(product_id: int):
-    db = SessionLocal()
+def delete_product(product_id: int, db: Session = Depends(get_db)):
 
     product = db.query(productModel).filter(
         productModel.id == product_id
     ).first()
 
     if not product:
-        db.close()
-        return {"error": "Product not found"}
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found"
+        )
 
     db.delete(product)
     db.commit()
-    db.close()
 
     return {"message": "Product deleted",
             "deleted item": product.name,

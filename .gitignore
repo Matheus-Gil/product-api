@@ -2,3 +2,4 @@ venv/
 __pycache__/
 *.pyc
 store.db
+.pytest_cache

@@ -44,6 +44,9 @@ def get_by_id(user_id: int):
 
     return {"error": "User not found"}
 
+#################
+# REGISTER USER #
+#################
 @router.post("/", 
              summary="Adds a new user", 
              description="Creates and registers a new user in the database, requiring a username and role")
